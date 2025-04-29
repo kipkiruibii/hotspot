@@ -38,6 +38,9 @@ class HotspotUsers(models.Model):
     active = models.BooleanField(default=False)
     ip = models.TextField()
     user = models.TextField()
+    plan = models.TextField()
+    dateSubscribed = models.DateTimeField(default=datetime.now)
+    expectedExpiry = models.DateTimeField(default=datetime.now)
 
     def __str__(self):
         return f"{self.ip}, Active: {self.active}"

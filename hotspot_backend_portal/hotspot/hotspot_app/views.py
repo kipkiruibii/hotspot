@@ -5,10 +5,39 @@ import json
 from .models import *
 import requests
 import uuid
+from routeros_api import RouterOsApiPool
 
 
 def homepage(request):
     return JsonResponse({"status": True})
+
+
+def allow_hotspot_mac(mac_address: str, ip: str):
+    connection = RouterOsApiPool(
+        host="10.10.0.1",  # MikroTik's WireGuard IP
+        username="admin",
+        password="BS9NHVYKV3",
+        port=8728,
+        use_ssl=False,
+    )
+    api = connection.get_api()
+
+    bypass = api.get_resource("/ip/hotspot/ip-binding")
+
+    # Check if already allowed
+    existing = bypass.get(mac_address=mac_address)
+    if not existing:
+        bypass.add(
+            mac_address=mac_address,
+            type="bypassed",  # Or use 'regular' to still require login
+            comment="Auto-added after M-Pesa payment",
+        )
+
+    # save active to db
+    hu = HotspotUsers(mac_address=mac_address, active=True, ip=ip)
+    hu.save()
+
+    connection.disconnect()
 
 
 @csrf_exempt
@@ -108,8 +137,7 @@ def payHeroCallback(request):
                 if status == "Success":
                     # grant access to the mac in microtik for the given time
                     # check number of devices
-                    pass
-
+                    allow_hotspot_mac(mac_address=ph.macAddress, ip=ph.ipAddress)
                 ph.save()
             else:
                 ts = PaymentHistory(
