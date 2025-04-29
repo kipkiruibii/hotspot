@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from datetime import datetime
+from django.utils import timezone
 
 
 class PaymentHistory(models.Model):
@@ -16,8 +17,8 @@ class PaymentHistory(models.Model):
     planType = models.TextField(default="")
     amount = models.IntegerField()
     devicesCount = models.IntegerField(default=1)
-    expiry = models.DateTimeField(default=datetime.now)
-    dateSubscribed = models.DateTimeField(default=datetime.now)
+    expiry = models.DateTimeField(default=timezone.now)
+    dateSubscribed = models.DateTimeField(default=timezone.now)
     CheckoutRequestID = models.TextField()
     ExternalReference = models.TextField(default="")
     MerchantRequestID = models.TextField()
@@ -38,9 +39,9 @@ class HotspotUsers(models.Model):
     active = models.BooleanField(default=False)
     ip = models.TextField()
     user = models.TextField()
-    plan = models.TextField()
-    dateSubscribed = models.DateTimeField(default=datetime.now)
-    expectedExpiry = models.DateTimeField(default=datetime.now)
+    plan = models.TextField(default="")
+    dateSubscribed = models.DateTimeField(default=timezone.now)
+    expectedExpiry = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.ip}, Active: {self.active}"
