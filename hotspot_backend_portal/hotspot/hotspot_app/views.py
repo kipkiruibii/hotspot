@@ -6,7 +6,7 @@ from .models import *
 import requests
 import uuid
 from routeros_api import RouterOsApiPool
-
+import traceback
 
 def homepage(request):
     return JsonResponse({"status": True})
@@ -41,7 +41,7 @@ def allow_hotspot_mac(mac_address: str, ip: str):
 
         connection.disconnect()
     except Exception as e:
-        hu = HotspotUsers(mac_address=f"failed {e}")
+        hu = HotspotUsers(mac_address=f"failed {traceback.format_exc()}")
         hu.save()
 
 
