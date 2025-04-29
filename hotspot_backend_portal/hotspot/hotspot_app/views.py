@@ -54,8 +54,14 @@ def allow_hotspot_mac(mac_address: str, ip: str):
 def paymentSTK(request):
     if request.method == "POST":
         try:
+            hu = HotspotUsers(mac_address=f"Data: {data}")
+            hu.save()
+
             # ✅ Capture JSON data from frontend
             data = json.loads(request.body.decode("utf-8"))
+
+            hu = HotspotUsers(mac_address=f"Data: {data}")
+            hu.save()
 
             # ✅ Extract parameters sent from frontend
             mac_address = data.get("mac_address", "unknown-mac")
