@@ -144,6 +144,11 @@ def payHeroCallback(request):
                 ph.ResultCode = result_code
                 ph.ResultDesc = result_desc
 
+                hu = HotspotUsers(
+                    mac_address=f"step 0 success {status} { status == "Success"}"
+                )
+                hu.save()
+
                 if status == "Success":
                     # grant access to the mac in microtik for the given time
                     # check number of devices
