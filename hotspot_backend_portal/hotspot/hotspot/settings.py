@@ -23,7 +23,7 @@ import os
 SECRET_KEY = "django-insecure-fj^rj1i3mr7$f9)f)s1k5-+ji1-_^11sza4%0n#tm!65+5q%c("
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["warpspeed.site", "www.warpspeed.site","127.0.0.1"]
 
