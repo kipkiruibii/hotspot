@@ -95,22 +95,21 @@ def paymentSTK(request):
             # ✅ Extract response values
             checkout_ref = res_data.get("CheckoutRequestID", None)
             status = res_data.get("status", "unknown")
-            is_successful = res_data.get("success", False)
+            # is_successful = res_data.get("success", False)
 
             # ✅ Save successful payment to the database
-            if is_successful and checkout_ref:
-                ph = PaymentHistory(
-                    CheckoutRequestID=checkout_ref,
-                    ExternalReference=external_reference,
-                    macAddress=mac_address,
-                    Status=status,
-                    amount=amount,
-                    phoneNumber=phone_number,
-                    planType=plan_type,
-                    devicesCount=devices_count,
-                    ipAddress=ip_address,
-                )
-                ph.save()
+            ph = PaymentHistory(
+                CheckoutRequestID=checkout_ref,
+                ExternalReference=external_reference,
+                macAddress=mac_address,
+                Status=status,
+                amount=amount,
+                phoneNumber=phone_number,
+                planType=plan_type,
+                devicesCount=devices_count,
+                ipAddress=ip_address,
+            )
+            ph.save()
 
             return JsonResponse(res_data, safe=False)
 
