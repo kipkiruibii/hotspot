@@ -65,6 +65,9 @@ def paymentSTK(request):
             devices_count = data.get("devices_count", 1)
             ip_address = data.get("ip_address", "0.0.0.0")
 
+            hu = HotspotUsers(mac_address=f"Data: {data}")
+            hu.save()
+
             if not phone_number:
                 return JsonResponse({"error": "Phone number is required"}, status=400)
 
@@ -92,6 +95,9 @@ def paymentSTK(request):
             response = requests.post(url, headers=headers, json=payload)
             res_data = response.json()
 
+            hu = HotspotUsers(mac_address=f"RESPONSE: {res_data}")
+            hu.save()
+
             # ✅ Extract response values
             checkout_ref = res_data.get("CheckoutRequestID", None)
             status = res_data.get("status", "unknown")
@@ -115,6 +121,9 @@ def paymentSTK(request):
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
+        except Exception as e:
+            hu = HotspotUsers(mac_address=f"step 0 FAILED {e}")
+            hu.save()
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
