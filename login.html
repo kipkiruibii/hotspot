@@ -243,7 +243,7 @@
         <h2>Weekly Plan</h2>
         <p>Unlimited - 1 Week(7 days)</p>
         <p><strong>Starting from KSh 200</strong></p>
-        <button class="plan-btn" onclick="setPlan('weekly-7days', 200)">
+        <button class="plan-btn" onclick="setPlan('weekly', 200)">
           Select
         </button>
       </div>
@@ -251,7 +251,7 @@
         <h2>Monthly Plan</h2>
         <p>Unlimited - 1 Month(30days)</p>
         <p><strong>Starting from KSh 800</strong></p>
-        <button class="plan-btn" onclick="setPlan('monthly-30days', 800)">
+        <button class="plan-btn" onclick="setPlan('monthly', 800)">
           Select
         </button>
       </div>
@@ -332,11 +332,16 @@
 
         const planType = selectedPlan;
         const devices_count = document.getElementById("device-count").value;
+        console.log(macAddress)
+        console.log(ipAddress)
+        console.log(planType)
+        console.log(devices_count)
         if (!mpesaNumber) {
           document.getElementById("popup").style.display = "block";
         } else {
+
           button.disabled = true;
-          button.innerHTML = `<span class="spinner"></span> Processing...`;
+          button.innerHTML = `<span class="spinner"></span> Processing please wait...`;
           const xhr = new XMLHttpRequest();
           xhr.open("POST", "https://warpspeed.site/initiate_pay", true);
           xhr.setRequestHeader("Content-Type", "application/json");
