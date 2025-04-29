@@ -99,7 +99,7 @@ def paymentSTK(request):
 
             # ✅ Save successful payment to the database
             if is_successful and checkout_ref:
-                PaymentHistory.objects.create(
+                ph = PaymentHistory(
                     CheckoutRequestID=checkout_ref,
                     ExternalReference=external_reference,
                     macAddress=mac_address,
@@ -110,6 +110,7 @@ def paymentSTK(request):
                     devicesCount=devices_count,
                     ipAddress=ip_address,
                 )
+                ph.save()
 
             return JsonResponse(res_data, safe=False)
 
