@@ -23,8 +23,40 @@ headers = {
     "Content-Type": "application/json"
 }
 
-response = requests.post(url, headers=headers, data=json.dumps(payload))
+# response = requests.post(url, headers=headers, data=json.dumps(payload))
 
+# print("Status Code:", response.status_code)
+# assert response.status_code == 200
+# print("Response:", response)
+
+
+import requests
+import json
+
+# Endpoint URL
+url = "https://warpspeed.site/initiate_pay"
+
+# Dummy data simulating frontend input
+payload = {
+    "phone_number": "0740714002",
+    "mac_address": "00:11:22:33:44:55",
+    "amount": 10.0,
+    "plan_type": "daily",
+    "devices_count": 1,
+    "ip_address": "192.168.88.5"
+}
+
+# Set headers
+headers = {
+    "Content-Type": "application/json"
+}
+
+# Send POST request
+response = requests.post(url, data=json.dumps(payload), headers=headers)
+
+# Output response
 print("Status Code:", response.status_code)
-assert response.status_code == 200
-print("Response:", response)
+try:
+    print("Response JSON:", response.json())
+except Exception:
+    print("Raw Response:", response.text)
