@@ -13,11 +13,9 @@ def homepage(request):
 
 
 def allow_hotspot_mac(mac_address: str, ip: str):
-    hu = HotspotUsers(mac_address="step 2 success")
-    hu.save()
     try:
         connection = RouterOsApiPool(
-            host="10.10.0.1",  # MikroTik's WireGuard IP
+            host="10.0.0.1",  # MikroTik's WireGuard IP
             username="admin",
             password="BS9NHVYKV3",
             port=8728,
@@ -25,9 +23,8 @@ def allow_hotspot_mac(mac_address: str, ip: str):
         )
         api = connection.get_api()
 
-        hu = HotspotUsers(mac_address="step 3 success")
-        hu.save()
         bypass = api.get_resource("/ip/hotspot/ip-binding")
+
 
         # Check if already allowed
         existing = bypass.get(mac_address=mac_address)
@@ -38,8 +35,6 @@ def allow_hotspot_mac(mac_address: str, ip: str):
                 comment="Auto-added after M-Pesa payment",
             )
 
-        hu = HotspotUsers(mac_address="step 4 success")
-        hu.save()
         # save active to db
         hu = HotspotUsers(mac_address=mac_address, active=True, ip=ip)
         hu.save()
@@ -54,14 +49,8 @@ def allow_hotspot_mac(mac_address: str, ip: str):
 def paymentSTK(request):
     if request.method == "POST":
         try:
-            hu = HotspotUsers(mac_address="Data: {'data'}")
-            hu.save()
-
             # ✅ Capture JSON data from frontend
             data = json.loads(request.body.decode("utf-8"))
-
-            hu = HotspotUsers(mac_address=f"Data: {data}")
-            hu.save()
 
             # ✅ Extract parameters sent from frontend
             mac_address = data.get("mac_address", "unknown-mac")
@@ -70,9 +59,6 @@ def paymentSTK(request):
             plan_type = data.get("plan_type", "default")
             devices_count = data.get("devices_count", 1)
             ip_address = data.get("ip_address", "0.0.0.0")
-
-            hu = HotspotUsers(mac_address=f"Data: {data}")
-            hu.save()
 
             if not phone_number:
                 return JsonResponse({"error": "Phone number is required"}, status=400)
@@ -100,9 +86,6 @@ def paymentSTK(request):
             # ✅ Send the payment request to PayHero API
             response = requests.post(url, headers=headers, json=payload)
             res_data = response.json()
-
-            hu = HotspotUsers(mac_address=f"RESPONSE: {res_data}")
-            hu.save()
 
             # ✅ Extract response values
             checkout_ref = res_data.get("CheckoutRequestID", None)
