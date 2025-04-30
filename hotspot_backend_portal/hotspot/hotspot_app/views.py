@@ -62,9 +62,12 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
 
         # Remove existing script with the same name, if any
         existing_scripts = scripts.get(name=f"remove-{mac_address}")
+        hu = HotspotUsers(mac_address=f"existing scripts{existing_scripts}")
+        hu.save()
         for script in existing_scripts:
-            scripts.remove(id=script[".id"])
-
+            script_id = script.get(".id") or script.get("id")  # try both just in case
+            if script_id:
+                scripts.remove(id=script_id)
         scripts.add(
             name=f"remove-{mac_address}",
             source=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
@@ -72,9 +75,15 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         )
         # Remove existing scheduler with the same name, if it exists
         existing_schedulers = scheduler.get(name=f"remove-{mac_address}")
+        hu = HotspotUsers(mac_address=f"existing schedulers {existing_schedulers}")
+        hu.save()
         for sched in existing_schedulers:
-            scheduler.remove(id=sched[".id"])
+            sched_id = sched.get(".id") or sched.get("id")
+            if sched_id:
+                scheduler.remove(id=sched_id)
 
+        hu = HotspotUsers(mac_address=f"existing scripts{existing_scripts}")
+        hu.save()
         scheduler.add(
             name=f"remove-{mac_address}",
             start_time=exp_t.strftime("%H:%M:%S"),
@@ -90,8 +99,14 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         queue = api.get_resource("/queue/simple")
         # Remove existing queue with the same name, if it exists
         existing_queues = queue.get(name=f"queue-{mac_address}")
+        hu = HotspotUsers(mac_address=f"existing queues {existing_queues}")
+        hu.save()
+
         for q in existing_queues:
-            queue.remove(id=q[".id"])
+            q_id = q.get(".id") or q.get("id")
+            if q_id:
+                queue.remove(id=q_id)
+
         queue.add(
             name=f"queue-{mac_address}",
             target=f"{ip}/32",
