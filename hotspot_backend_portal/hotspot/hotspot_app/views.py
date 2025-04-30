@@ -12,12 +12,13 @@ def homepage(request):
     return JsonResponse({"status": True})
 
 
+
 def allow_hotspot_mac(mac_address: str, ip: str):
     try:
         connection = RouterOsApiPool(
             host="10.0.0.1",  # MikroTik's WireGuard IP
-            username="admin",
-            password="BS9NHVYKV3",
+            username="api-user",
+            password="@Dracula2025",
             port=8728,
             use_ssl=False,
         )
