@@ -44,30 +44,27 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         # Schedule removal after e.g. 1 hour (60 minutes)
         scheduler = api.get_resource("/system/scheduler")
 
-        expiry = "00:05:00"
         exp_t = timezone.now() + timedelta(minutes=5)
 
         if plantype.lower() == "hourly":
-            expiry = "00:05:00"  # 1 hour
-            exp_t = timezone.now() + timedelta(hours=1)
+            exp_t = timezone.now() + timedelta(minutes=5)
 
         elif plantype.lower() == "daily":
-            expiry = "1d 00:00:00"  # 1 day
             exp_t = timezone.now() + timedelta(days=1)
 
         elif plantype.lower() == "weekly":
-            expiry = "7d 00:00:00"  # 7 days
             exp_t = timezone.now() + timedelta(days=7)
 
         elif plantype.lower() == "monthly":
-            expiry = "30d 00:00:00"  # 30 days
             exp_t = timezone.now() + timedelta(days=30)
 
         scripts = api.get_resource("/system/script")
 
-        # Remove existing scripts by name
-        scripts.remove(id=scripts.get(name=f"remove-{mac_address}")[0][".id"])
-        
+        # Remove existing script with the same name, if any
+        existing_scripts = scripts.get(name=f"remove-{mac_address}")
+        for script in existing_scripts:
+            scripts.remove(id=script[".id"])
+
         scripts.add(
             name=f"remove-{mac_address}",
             source=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
@@ -84,13 +81,17 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
 
         hu = HotspotUsers(mac_address=f"step 6 setting bandwidth")
         hu.save()
+
         # set the bandwidth
         queue = api.get_resource("/queue/simple")
-
+        # Remove existing queue with the same name, if it exists
+        existing_queues = queue.get(name=f"queue-{mac_address}")
+        for q in existing_queues:
+            queue.remove(id=q[".id"])
         queue.add(
             name=f"queue-{mac_address}",
             target=f"{ip}/32",
-            max_limit="10M/5M",  # 2 Mbps download / 1 Mbps upload
+            max_limit="10M/5M",  # 10 Mbps download / 5 Mbps upload
             comment=f"Limit for {mac_address}",
         )
         hu = HotspotUsers(mac_address=f"step 7 done")
