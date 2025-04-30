@@ -65,6 +65,9 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
 
         scripts = api.get_resource("/system/script")
 
+        # Remove existing scripts by name
+        scripts.remove(id=scripts.get(name=f"remove-{mac_address}")[0][".id"])
+        
         scripts.add(
             name=f"remove-{mac_address}",
             source=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
@@ -72,7 +75,8 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         )
         scheduler.add(
             name=f"remove-{mac_address}",
-            interval=str(expiry),
+            start_time=exp_t.strftime("%H:%M:%S"),
+            start_date=exp_t.strftime("%Y-%m-%d"),
             on_event=f"remove-{mac_address}",
             comment="Auto-remove user after expiry",
             run_count="1",
