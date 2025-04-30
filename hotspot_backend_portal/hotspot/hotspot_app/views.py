@@ -13,7 +13,7 @@ def homepage(request):
     return JsonResponse({"status": True})
 
 
-def allow_hotspot_macv(mac_address: str, ip: str):
+def allow_hotspot_mac(mac_address: str, ip: str):
     try:
         connection = RouterOsApiPool(
             host="10.0.0.1",  # MikroTik's WireGuard IP
