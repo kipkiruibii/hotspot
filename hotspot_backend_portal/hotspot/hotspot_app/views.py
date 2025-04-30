@@ -182,6 +182,9 @@ def payHeroCallback(request):
         hu.save()
 
         response_data = data.get("response", {})
+        hu = HotspotUsers(mac_address=f"step 3 check call {response_data} ")
+        hu.save()
+
         if response_data:
             amount = response_data.get("Amount", 0)
             checkout_request_id = response_data.get("CheckoutRequestID", "k")
@@ -195,6 +198,9 @@ def payHeroCallback(request):
             ph = PaymentHistory.objects.filter(
                 CheckoutRequestID=checkout_request_id
             ).first()
+            hu = HotspotUsers(mac_address=f"step 3 okay ")
+            hu.save()
+
             if ph:
                 ph.Status = status
                 ph.MerchantRequestID = merchant_request_id
@@ -233,6 +239,9 @@ def payHeroCallback(request):
             # add the request to
 
             return JsonResponse({"Result": "Callback Success"})
+
+        hu = HotspotUsers(mac_address=f"step 3 complete fail")
+        hu.save()
 
     return JsonResponse({"Result": "Failed"})
 
