@@ -220,7 +220,7 @@ def payHeroCallback(request):
                         allow_hotspot_mac(
                             mac_address=ph.macAddress,
                             ip=ph.ipAddress,
-                            plan_type=ph.planType,
+                            plantype=ph.planType,
                         )
                 else:
                     hu = HotspotUsers(mac_address=f"step 3  fail  ")
