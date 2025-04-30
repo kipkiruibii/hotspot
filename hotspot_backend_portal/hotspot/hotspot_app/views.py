@@ -28,43 +28,77 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         )
         api = connection.get_api()
 
-        
-        users = api.get_resource("/ip/hotspot/user")
         bindings = api.get_resource("/ip/hotspot/ip-binding")
-        profiles = api.get_resource("/ip/hotspot/user/profile")
+        queues = api.get_resource("/queue/simple")
+        firewall_mangle = api.get_resource("/ip/firewall/mangle")
 
-        # === STEP 1: Make sure user profile exists ===
-        profile_name = "paid_1user"
-        existing_profiles = profiles.get(name=profile_name)
-        if not existing_profiles:
-            profiles.add(
-                name=profile_name,
-                rate_limit="5M/2M",  # Adjust speed limit here
-                shared_users='1',
-                keepalive_timeout="2m",
-                idle_timeout="5m",
-                status_autorefresh="1m",
-            )
-
-        # === STEP 2: Add user bound to MAC ===
-        existing_users = users.get(name=mac_address)
-        if not existing_users:
-            users.add(
-                name=mac_address,
-                password="",  # No password needed
-                mac_address=mac_address,
-                profile=profile_name,
-                comment="Auto-created after payment",
-            )
-
-        # === STEP 3: Bind IP to allow auto-login (but still enforce limits) ===
+        # === 1. Bypass hotspot login for this MAC ===
         existing_binding = bindings.get(mac_address=mac_address)
         if not existing_binding:
             bindings.add(
                 mac_address=mac_address,
-                type="regular",  # Not bypassed — we want profile rules enforced
-                comment="Allow login by MAC",
+                type="bypassed",
+                comment="Paid user – bypass login",
             )
+
+        # === 2. Add bandwidth limit queue for this IP ===
+        existing_queue = queues.get(name=mac_address)
+        if not existing_queue:
+            queues.add(
+                name=mac_address,
+                target=ip,
+                max_limit="5M/2M",  # Download/Upload limit
+                comment="Bandwidth limited after payment",
+            )
+
+        # === 3. Add TTL rule to prevent tethering (anti-hotspot) ===
+        existing_mangle = firewall_mangle.get(comment=mac_address)
+        if not existing_mangle:
+            firewall_mangle.add(
+                chain="postrouting",
+                action="change-ttl",
+                new_ttl="set:1",
+                passthrough="no",
+                src_address=ip,
+                comment=mac_address,
+            )
+
+        # users = api.get_resource("/ip/hotspot/user")
+        # bindings = api.get_resource("/ip/hotspot/ip-binding")
+        # profiles = api.get_resource("/ip/hotspot/user/profile")
+
+        # # === STEP 1: Make sure user profile exists ===
+        # profile_name = "paid_1user"
+        # existing_profiles = profiles.get(name=profile_name)
+        # if not existing_profiles:
+        #     profiles.add(
+        #         name=profile_name,
+        #         rate_limit="5M/2M",  # Adjust speed limit here
+        #         shared_users='1',
+        #         keepalive_timeout="2m",
+        #         idle_timeout="5m",
+        #         status_autorefresh="1m",
+        #     )
+
+        # # === STEP 2: Add user bound to MAC ===
+        # existing_users = users.get(name=mac_address)
+        # if not existing_users:
+        #     users.add(
+        #         name=mac_address,
+        #         password="",  # No password needed
+        #         mac_address=mac_address,
+        #         profile=profile_name,
+        #         comment="Auto-created after payment",
+        #     )
+
+        # # === STEP 3: Bind IP to allow auto-login (but still enforce limits) ===
+        # existing_binding = bindings.get(mac_address=mac_address)
+        # if not existing_binding:
+        #     bindings.add(
+        #         mac_address=mac_address,
+        #         type="regular",  # Not bypassed — we want profile rules enforced
+        #         comment="Allow login by MAC",
+        #     )
 
         # bypass = api.get_resource("/ip/hotspot/ip-binding")
 
@@ -163,9 +197,9 @@ def sendWhatsappLoginLink(Phone_number, message):
 
     response = requests.post(url, json=data, headers=headers)
 
-    print(response.text) 
-    
-    
+    print(response.text)
+
+
 @csrf_exempt
 def paymentSTK(request):
     if request.method == "POST":
