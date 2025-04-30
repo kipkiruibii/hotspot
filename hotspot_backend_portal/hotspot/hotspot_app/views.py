@@ -8,12 +8,12 @@ import uuid
 from routeros_api import RouterOsApiPool
 import traceback
 
+
 def homepage(request):
     return JsonResponse({"status": True})
 
 
-
-def allow_hotspot_mac(mac_address: str, ip: str):
+def allow_hotspot_macv(mac_address: str, ip: str):
     try:
         connection = RouterOsApiPool(
             host="10.0.0.1",  # MikroTik's WireGuard IP
@@ -21,11 +21,11 @@ def allow_hotspot_mac(mac_address: str, ip: str):
             password="@Dracula2025",
             port=8728,
             use_ssl=False,
+            plaintext_login=True,
         )
         api = connection.get_api()
 
         bypass = api.get_resource("/ip/hotspot/ip-binding")
-
 
         # Check if already allowed
         existing = bypass.get(mac_address=mac_address)
