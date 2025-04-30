@@ -40,7 +40,7 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             profiles.add(
                 name=profile_name,
                 rate_limit="5M/2M",  # Adjust speed limit here
-                shared_users=1,
+                shared_users='1',
                 keepalive_timeout="2m",
                 idle_timeout="5m",
                 status_autorefresh="1m",
