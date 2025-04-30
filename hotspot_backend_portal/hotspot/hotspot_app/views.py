@@ -28,16 +28,55 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         )
         api = connection.get_api()
 
-        bypass = api.get_resource("/ip/hotspot/ip-binding")
+        
+        users = api.get_resource("/ip/hotspot/user")
+        bindings = api.get_resource("/ip/hotspot/ip-binding")
+        profiles = api.get_resource("/ip/hotspot/user/profile")
 
-        # Check if already allowed
-        existing = bypass.get(mac_address=mac_address)
-        if not existing:
-            bypass.add(
-                mac_address=mac_address,
-                type="bypassed",  # Or use 'regular' to still require login
-                comment="M-Pesa payment",
+        # === STEP 1: Make sure user profile exists ===
+        profile_name = "paid_1user"
+        existing_profiles = profiles.get(name=profile_name)
+        if not existing_profiles:
+            profiles.add(
+                name=profile_name,
+                rate_limit="5M/2M",  # Adjust speed limit here
+                shared_users=1,
+                keepalive_timeout="2m",
+                idle_timeout="5m",
+                status_autorefresh="1m",
+                comment="Enforces 1 user and bandwidth limit",
             )
+
+        # === STEP 2: Add user bound to MAC ===
+        existing_users = users.get(name=mac_address)
+        if not existing_users:
+            users.add(
+                name=mac_address,
+                password="",  # No password needed
+                mac_address=mac_address,
+                profile=profile_name,
+                comment="Auto-created after payment",
+            )
+
+        # === STEP 3: Bind IP to allow auto-login (but still enforce limits) ===
+        existing_binding = bindings.get(mac_address=mac_address)
+        if not existing_binding:
+            bindings.add(
+                mac_address=mac_address,
+                type="regular",  # Not bypassed — we want profile rules enforced
+                comment="Allow login by MAC",
+            )
+
+        # bypass = api.get_resource("/ip/hotspot/ip-binding")
+
+        # # Check if already allowed
+        # existing = bypass.get(mac_address=mac_address)
+        # if not existing:
+        #     bypass.add(
+        #         mac_address=mac_address,
+        #         type="bypassed",  # Or use 'regular' to still require login
+        #         comment="M-Pesa payment",
+        #     )
         # Schedule removal after e.g. 1 hour (60 minutes)
 
         exp_t = timezone.now() + timedelta(minutes=5)
