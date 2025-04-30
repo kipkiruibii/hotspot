@@ -202,14 +202,20 @@ def payHeroCallback(request):
                 ph.ResultCode = result_code
                 ph.ResultDesc = result_desc
                 ph.save()
+                hu = HotspotUsers(mac_address=f"step 3b ")
+                hu.save()
 
-                if status == "Success":
+                if status.lower() == "success":
+                    hu = HotspotUsers(mac_address=f"step 3c ")
                     allow_hotspot_mac(
                         mac_address=ph.macAddress,
                         ip=ph.ipAddress,
                         plan_type=ph.planType,
                     )
             else:
+                hu = HotspotUsers(mac_address=f"step 3  fail  ")
+                hu.save()
+
                 ts = PaymentHistory(
                     amount=amount,
                     CheckoutRequestID=checkout_request_id,
