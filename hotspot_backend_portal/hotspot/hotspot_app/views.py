@@ -70,6 +70,11 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             source=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
             comment=f"Auto-generated removal script for {mac_address}",
         )
+        # Remove existing scheduler with the same name, if it exists
+        existing_schedulers = scheduler.get(name=f"remove-{mac_address}")
+        for sched in existing_schedulers:
+            scheduler.remove(id=sched[".id"])
+
         scheduler.add(
             name=f"remove-{mac_address}",
             start_time=exp_t.strftime("%H:%M:%S"),
