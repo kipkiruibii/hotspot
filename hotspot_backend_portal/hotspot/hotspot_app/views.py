@@ -99,7 +99,6 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
 def paymentSTK(request):
     if request.method == "POST":
         try:
-
             # ✅ Capture JSON data from frontend
             data = json.loads(request.body.decode("utf-8"))
 
@@ -208,11 +207,15 @@ def payHeroCallback(request):
                 ph.ResultCode = result_code
                 ph.ResultDesc = result_desc
                 ph.save()
-                hu = HotspotUsers(mac_address=f"step 3b ")
+
+                hu = HotspotUsers(
+                    mac_address=f"step 3b {status.lower()} {ph.ipAddress}"
+                )
                 hu.save()
 
                 if status.lower() == "success":
                     hu = HotspotUsers(mac_address=f"step 3c ")
+                    hu.save()
                     allow_hotspot_mac(
                         mac_address=ph.macAddress,
                         ip=ph.ipAddress,
