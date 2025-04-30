@@ -7,13 +7,15 @@ import requests
 import uuid
 from routeros_api import RouterOsApiPool
 import traceback
+from django.utils import timezone
+from datetime import timedelta
 
 
 def homepage(request):
     return JsonResponse({"status": True})
 
 
-def allow_hotspot_mac(mac_address: str, ip: str):
+def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
     try:
         connection = RouterOsApiPool(
             host="10.0.0.1",  # MikroTik's WireGuard IP
@@ -36,8 +38,48 @@ def allow_hotspot_mac(mac_address: str, ip: str):
                 comment="Auto-added after M-Pesa payment",
             )
 
+        # Schedule removal after e.g. 1 hour (60 minutes)
+        scheduler = api.get_resource("/system/scheduler")
+
+        expiry = "00:05:00"
+        exp_t = timezone.now() + timedelta(minutes=5)
+
+        if plantype.lower() == "hourly":
+            expiry = "00:05:00"  # 1 hour
+            exp_t = timezone.now() + timedelta(hours=1)
+
+        elif plantype.lower() == "daily":
+            expiry = "1d 00:00:00"  # 1 day
+            exp_t = timezone.now() + timedelta(days=1)
+
+        elif plantype.lower() == "weekly":
+            expiry = "7d 00:00:00"  # 7 days
+            exp_t = timezone.now() + timedelta(days=7)
+
+        elif plantype.lower() == "monthly":
+            expiry = "30d 00:00:00"  # 30 days
+            exp_t = timezone.now() + timedelta(days=30)
+        scheduler.add(
+            name=f"remove-{mac_address}",
+            interval=expiry,
+            on_event=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
+            comment="Auto-remove user after expiry",
+            run_count=1,
+        )
+
+        # set the bandwidth
+        queue = api.get_resource("/queue/simple")
+
+        queue.add(
+            name=f"queue-{mac_address}",
+            target=f"{ip}/32",
+            max_limit="10M/5M",  # 2 Mbps download / 1 Mbps upload
+            comment=f"Limit for {mac_address}",
+        )
         # save active to db
-        hu = HotspotUsers(mac_address=mac_address, active=True, ip=ip)
+        hu = HotspotUsers(
+            mac_address=mac_address, active=True, ip=ip, expectedExpiry=exp_t
+        )
         hu.save()
 
         connection.disconnect()
@@ -144,17 +186,13 @@ def payHeroCallback(request):
                 ph.ResultCode = result_code
                 ph.ResultDesc = result_desc
 
-                hu = HotspotUsers(
-                    mac_address=f"step 0 success {status} { status == "Success"}"
-                )
-                hu.save()
-
                 if status == "Success":
-                    # grant access to the mac in microtik for the given time
-                    # check number of devices
-                    hu = HotspotUsers(mac_address="step 1 success")
-                    hu.save()
-                    allow_hotspot_mac(mac_address=ph.macAddress, ip=ph.ipAddress)
+
+                    allow_hotspot_mac(
+                        mac_address=ph.macAddress,
+                        ip=ph.ipAddress,
+                        plan_type=ph.planType,
+                    )
                 ph.save()
             else:
                 ts = PaymentHistory(
