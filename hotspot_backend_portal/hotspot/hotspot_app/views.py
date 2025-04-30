@@ -44,7 +44,6 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
                 keepalive_timeout="2m",
                 idle_timeout="5m",
                 status_autorefresh="1m",
-                comment="Enforces 1 user and bandwidth limit",
             )
 
         # === STEP 2: Add user bound to MAC ===
