@@ -201,6 +201,7 @@ def payHeroCallback(request):
                 ph.MpesaReceiptNumber = mpesa_receipt_number
                 ph.ResultCode = result_code
                 ph.ResultDesc = result_desc
+                ph.save()
 
                 if status == "Success":
                     allow_hotspot_mac(
@@ -208,7 +209,6 @@ def payHeroCallback(request):
                         ip=ph.ipAddress,
                         plan_type=ph.planType,
                     )
-                ph.save()
             else:
                 ts = PaymentHistory(
                     amount=amount,
