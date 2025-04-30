@@ -76,7 +76,6 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             start_date=exp_t.strftime("%Y-%m-%d"),
             on_event=f"remove-{mac_address}",
             comment="Auto-remove user after expiry",
-            run_count="1",
         )
 
         hu = HotspotUsers(mac_address=f"step 6 setting bandwidth")
