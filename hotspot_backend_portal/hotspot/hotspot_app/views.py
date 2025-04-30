@@ -9,6 +9,7 @@ from routeros_api import RouterOsApiPool
 import traceback
 from django.utils import timezone
 from datetime import timedelta
+import pytz
 
 
 def homepage(request):
@@ -42,7 +43,6 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         hu = HotspotUsers(mac_address=f"step 5 adding scheduler ")
         hu.save()
         # Schedule removal after e.g. 1 hour (60 minutes)
-        scheduler = api.get_resource("/system/scheduler")
 
         exp_t = timezone.now() + timedelta(minutes=5)
 
@@ -58,8 +58,11 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         elif plantype.lower() == "monthly":
             exp_t = timezone.now() + timedelta(days=30)
 
-        scripts = api.get_resource("/system/script")
+        toronto_tz = pytz.timezone("America/Toronto")
+        exp_t = exp_t.astimezone(toronto_tz)
 
+        scripts = api.get_resource("/system/script")
+        
         # Remove existing script with the same name, if any
         existing_scripts = scripts.get(name=f"script-remove-{mac_address}")
         hu = HotspotUsers(mac_address=f"existing scripts{existing_scripts}")
@@ -73,6 +76,7 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             source=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
             comment=f"Auto-generated removal script for {mac_address}",
         )
+        scheduler = api.get_resource("/system/scheduler")
         # Remove existing scheduler with the same name, if it exists
         existing_schedulers = scheduler.get(name=f"remove-{mac_address}")
         hu = HotspotUsers(mac_address=f"existing schedulers {existing_schedulers}")
