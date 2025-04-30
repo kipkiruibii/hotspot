@@ -61,7 +61,7 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         scripts = api.get_resource("/system/script")
 
         # Remove existing script with the same name, if any
-        existing_scripts = scripts.get(name=f"remove-{mac_address}")
+        existing_scripts = scripts.get(name=f"script-remove-{mac_address}")
         hu = HotspotUsers(mac_address=f"existing scripts{existing_scripts}")
         hu.save()
         for script in existing_scripts:
@@ -69,12 +69,12 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             if script_id:
                 scripts.remove(id=script_id)
         scripts.add(
-            name=f"remove-{mac_address}",
+            name=f"script-remove-{mac_address}",
             source=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
             comment=f"Auto-generated removal script for {mac_address}",
         )
         # Remove existing scheduler with the same name, if it exists
-        existing_schedulers = scheduler.get(name=f"script-remove-{mac_address}")
+        existing_schedulers = scheduler.get(name=f"remove-{mac_address}")
         hu = HotspotUsers(mac_address=f"existing schedulers {existing_schedulers}")
         hu.save()
         for sched in existing_schedulers:

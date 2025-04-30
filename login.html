@@ -332,14 +332,13 @@
 
         const planType = selectedPlan;
         const devices_count = document.getElementById("device-count").value;
-        console.log(macAddress)
-        console.log(ipAddress)
-        console.log(planType)
-        console.log(devices_count)
+        console.log(macAddress);
+        console.log(ipAddress);
+        console.log(planType);
+        console.log(devices_count);
         if (!mpesaNumber) {
           document.getElementById("popup").style.display = "block";
         } else {
-
           button.disabled = true;
           button.innerHTML = `<span class="spinner"></span> Processing please wait...`;
           const xhr = new XMLHttpRequest();
