@@ -125,9 +125,10 @@ def sendWhatsappLoginLink(Phone_number, message):
 
     response = requests.post(url, json=data, headers=headers)
 
-    print(response.text) @ csrf_exempt
-
-
+    print(response.text) 
+    
+    
+@csrf_exempt
 def paymentSTK(request):
     if request.method == "POST":
         try:
