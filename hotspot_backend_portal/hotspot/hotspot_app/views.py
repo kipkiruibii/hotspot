@@ -183,68 +183,72 @@ def payHeroCallback(request):
         response_data = data.get("response", {})
         hu = HotspotUsers(mac_address=f"step 3 check call {response_data} ")
         hu.save()
+        try:
 
-        if response_data:
-            amount = response_data.get("Amount", 0)
-            checkout_request_id = response_data.get("CheckoutRequestID", "k")
-            external_reference = response_data.get("ExternalReference", "k")
-            merchant_request_id = response_data.get("MerchantRequestID", "k")
-            mpesa_receipt_number = response_data.get("MpesaReceiptNumber", "k")
-            phone = response_data.get("Phone", "k")
-            result_code = response_data.get("ResultCode", -1)
-            result_desc = response_data.get("ResultDesc", "k")
-            status = response_data.get("Status", "k")
-            ph = PaymentHistory.objects.filter(
-                CheckoutRequestID=checkout_request_id
-            ).first()
-            hu = HotspotUsers(mac_address=f"step 3 okay ")
-            hu.save()
-
-            if ph:
-                ph.Status = status
-                ph.MerchantRequestID = merchant_request_id
-                ph.MpesaReceiptNumber = mpesa_receipt_number
-                ph.ResultCode = result_code
-                ph.ResultDesc = result_desc
-                ph.save()
-
-                hu = HotspotUsers(
-                    mac_address=f"step 3b {status.lower()} {ph.ipAddress}"
-                )
+            if response_data:
+                amount = response_data.get("Amount", 0)
+                checkout_request_id = response_data.get("CheckoutRequestID", "k")
+                external_reference = response_data.get("ExternalReference", "k")
+                merchant_request_id = response_data.get("MerchantRequestID", "k")
+                mpesa_receipt_number = response_data.get("MpesaReceiptNumber", "k")
+                phone = response_data.get("Phone", "k")
+                result_code = response_data.get("ResultCode", -1)
+                result_desc = response_data.get("ResultDesc", "k")
+                status = response_data.get("Status", "k")
+                ph = PaymentHistory.objects.filter(
+                    CheckoutRequestID=checkout_request_id
+                ).first()
+                hu = HotspotUsers(mac_address=f"step 3 okay ")
                 hu.save()
 
-                if status.lower() == "success":
-                    hu = HotspotUsers(mac_address=f"step 3c ")
-                    hu.save()
-                    allow_hotspot_mac(
-                        mac_address=ph.macAddress,
-                        ip=ph.ipAddress,
-                        plan_type=ph.planType,
+                if ph:
+                    ph.Status = status
+                    ph.MerchantRequestID = merchant_request_id
+                    ph.MpesaReceiptNumber = mpesa_receipt_number
+                    ph.ResultCode = result_code
+                    ph.ResultDesc = result_desc
+                    ph.save()
+
+                    hu = HotspotUsers(
+                        mac_address=f"step 3b {status.lower()} {ph.ipAddress}"
                     )
-            else:
-                hu = HotspotUsers(mac_address=f"step 3  fail  ")
-                hu.save()
+                    hu.save()
 
-                ts = PaymentHistory(
-                    amount=amount,
-                    CheckoutRequestID=checkout_request_id,
-                    ExternalReference=external_reference,
-                    MerchantRequestID=merchant_request_id,
-                    MpesaReceiptNumber=mpesa_receipt_number,
-                    phoneNumber=phone,
-                    ResultCode=result_code,
-                    ResultDesc=result_desc,
-                    Status=status,
-                )
-                ts.save()
+                    if status.lower() == "success":
+                        hu = HotspotUsers(mac_address=f"step 3c ")
+                        hu.save()
+                        allow_hotspot_mac(
+                            mac_address=ph.macAddress,
+                            ip=ph.ipAddress,
+                            plan_type=ph.planType,
+                        )
+                else:
+                    hu = HotspotUsers(mac_address=f"step 3  fail  ")
+                    hu.save()
 
-            # check status if successful handle authentication:
-            # add the request to
+                    ts = PaymentHistory(
+                        amount=amount,
+                        CheckoutRequestID=checkout_request_id,
+                        ExternalReference=external_reference,
+                        MerchantRequestID=merchant_request_id,
+                        MpesaReceiptNumber=mpesa_receipt_number,
+                        phoneNumber=phone,
+                        ResultCode=result_code,
+                        ResultDesc=result_desc,
+                        Status=status,
+                    )
+                    ts.save()
 
-            return JsonResponse({"Result": "Callback Success"})
+                # check status if successful handle authentication:
+                # add the request to
 
-        hu = HotspotUsers(mac_address=f"step 3 complete fail")
-        hu.save()
+                return JsonResponse({"Result": "Callback Success"})
+
+            hu = HotspotUsers(mac_address=f"step 3 complete fail")
+            hu.save()
+        except:
+            hu = HotspotUsers(mac_address=f"step FFFAILDDDD {traceback.format_exc()}")
+            hu.save()
 
     return JsonResponse({"Result": "Failed"})
 
