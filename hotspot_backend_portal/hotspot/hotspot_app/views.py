@@ -74,7 +74,7 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             comment=f"Auto-generated removal script for {mac_address}",
         )
         # Remove existing scheduler with the same name, if it exists
-        existing_schedulers = scheduler.get(name=f"remove-{mac_address}")
+        existing_schedulers = scheduler.get(name=f"script-remove-{mac_address}")
         hu = HotspotUsers(mac_address=f"existing schedulers {existing_schedulers}")
         hu.save()
         for sched in existing_schedulers:
@@ -88,7 +88,7 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             name=f"remove-{mac_address}",
             start_time=exp_t.strftime("%H:%M:%S"),
             start_date=exp_t.strftime("%Y-%m-%d"),
-            on_event=f"/system script run remove-{mac_address}",
+            on_event=f"script-remove-{mac_address}",
             comment="Auto-remove user after expiry",
         )
 
