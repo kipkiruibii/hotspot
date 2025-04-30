@@ -51,12 +51,31 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# Send POST request
-response = requests.post(url, data=json.dumps(payload), headers=headers)
+# # Send POST request
+# response = requests.post(url, data=json.dumps(payload), headers=headers)
 
-# Output response
-print("Status Code:", response.status_code)
-try:
-    print("Response JSON:", response.json())
-except Exception:
-    print("Raw Response:", response.text)
+# # Output response
+# print("Status Code:", response.status_code)
+# try:
+#     print("Response JSON:", response.json())
+# except Exception:
+#     print("Raw Response:", response.text)
+
+import requests
+
+url = 'https://backend.payhero.co.ke/api/v2/whatspp/sendText'
+
+headers = {
+    'Content-Type': 'application/json',
+    "Authorization": "Basic TkxUNkZBM2hFUmo2akgzbzhVTXk6QmtmT3A4SHVQM01LUWhjdmo4Q291SE1WQjlWME95ZmZ0VjV4UDYwMA==",
+}
+
+data = {
+    "message": "My First Text",
+    "phone_number": "0740714002",
+    "session": "loginlinks"
+}
+
+response = requests.post(url, json=data, headers=headers)
+
+print(response.text)

@@ -18,8 +18,6 @@ def homepage(request):
 
 def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
     try:
-        hu = HotspotUsers(mac_address=f"step 4 communicating with mikrotik ")
-        hu.save()
         connection = RouterOsApiPool(
             host="10.0.0.1",  # MikroTik's WireGuard IP
             username="api-user",
@@ -38,16 +36,14 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             bypass.add(
                 mac_address=mac_address,
                 type="bypassed",  # Or use 'regular' to still require login
-                comment="Auto-added after M-Pesa payment",
+                comment="M-Pesa payment",
             )
-        hu = HotspotUsers(mac_address=f"step 5 adding scheduler ")
-        hu.save()
         # Schedule removal after e.g. 1 hour (60 minutes)
 
         exp_t = timezone.now() + timedelta(minutes=5)
 
         if plantype.lower() == "hourly":
-            exp_t = timezone.now() + timedelta(minutes=5)
+            exp_t = timezone.now() + timedelta(hours=1)
 
         elif plantype.lower() == "daily":
             exp_t = timezone.now() + timedelta(days=1)
@@ -62,11 +58,9 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         exp_t = exp_t.astimezone(toronto_tz)
 
         scripts = api.get_resource("/system/script")
-        
+
         # Remove existing script with the same name, if any
         existing_scripts = scripts.get(name=f"script-remove-{mac_address}")
-        hu = HotspotUsers(mac_address=f"existing scripts{existing_scripts}")
-        hu.save()
         for script in existing_scripts:
             script_id = script.get(".id") or script.get("id")  # try both just in case
             if script_id:
@@ -76,18 +70,14 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             source=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
             comment=f"Auto-generated removal script for {mac_address}",
         )
+
         scheduler = api.get_resource("/system/scheduler")
         # Remove existing scheduler with the same name, if it exists
         existing_schedulers = scheduler.get(name=f"remove-{mac_address}")
-        hu = HotspotUsers(mac_address=f"existing schedulers {existing_schedulers}")
-        hu.save()
         for sched in existing_schedulers:
             sched_id = sched.get(".id") or sched.get("id")
             if sched_id:
                 scheduler.remove(id=sched_id)
-
-        hu = HotspotUsers(mac_address=f"existing scripts{existing_scripts}")
-        hu.save()
         scheduler.add(
             name=f"remove-{mac_address}",
             start_time=exp_t.strftime("%H:%M:%S"),
@@ -95,45 +85,21 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             on_event=f"script-remove-{mac_address}",
             comment="Auto-remove user after expiry",
         )
-
-        hu = HotspotUsers(mac_address=f"step 6 setting bandwidth")
-        hu.save()
-
         # set the bandwidth
         queue = api.get_resource("/queue/simple")
         # Remove existing queue with the same name, if it exists
         existing_queues = queue.get(name=f"queue-{mac_address}")
-        hu = HotspotUsers(mac_address=f"existing queues {existing_queues}")
-        hu.save()
-
         for q in existing_queues:
             q_id = q.get(".id") or q.get("id")
             if q_id:
                 queue.remove(id=q_id)
 
-        leases = api.get_resource("/ip/dhcp-server/lease")
-        lease_info = leases.get(mac_address=mac_address)
-
-        # Try fallback to ARP if not found in DHCP
-        if not lease_info:
-            arp = api.get_resource("/ip/arp")
-            lease_info = arp.get(mac_address=mac_address)
-
-        # If still not found, skip or raise error
-        if lease_info:
-            ip = lease_info[0]["address"]
-
-        # Get the IP address
-        ip = lease_info[0]["address"]
-
         queue.add(
             name=f"queue-{mac_address}",
             target=f"{ip}/32",
-            max_limit="10M/5M",  # 10 Mbps download / 5 Mbps upload
+            max_limit="8M/2M",  # 10 Mbps download / 5 Mbps upload
             comment=f"Limit for {mac_address}",
         )
-        hu = HotspotUsers(mac_address=f"step 7 done")
-        hu.save()
 
         # save active to db
         hu = HotspotUsers(
@@ -143,19 +109,30 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
 
         connection.disconnect()
     except Exception as e:
-        hu = HotspotUsers(mac_address=f"failed {traceback.format_exc()}")
-        hu.save()
+        el = ErrorLogs(errorException=f"{e}", traceback=f"{traceback.format_exc()}")
+        el.save()
 
 
-@csrf_exempt
+def sendWhatsappLoginLink(Phone_number, message):
+    url = "https://backend.payhero.co.ke/api/v2/whatspp/sendText"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Basic TkxUNkZBM2hFUmo2akgzbzhVTXk6QmtmT3A4SHVQM01LUWhjdmo4Q291SE1WQjlWME95ZmZ0VjV4UDYwMA==",
+    }
+
+    data = {"message": message, "phone_number": Phone_number, "session": "loginlinks"}
+
+    response = requests.post(url, json=data, headers=headers)
+
+    print(response.text) @ csrf_exempt
+
+
 def paymentSTK(request):
     if request.method == "POST":
         try:
             # ✅ Capture JSON data from frontend
             data = json.loads(request.body.decode("utf-8"))
-
-            hu = HotspotUsers(mac_address="step 1 ")
-            hu.save()
 
             # ✅ Extract parameters sent from frontend
             mac_address = data.get("mac_address", "unknown-mac")
@@ -191,8 +168,6 @@ def paymentSTK(request):
             # ✅ Send the payment request to PayHero API
             response = requests.post(url, headers=headers, json=payload)
             res_data = response.json()
-            hu = HotspotUsers(mac_address=f"step 2 response from {res_data} ")
-            hu.save()
 
             # ✅ Extract response values
             checkout_ref = res_data.get("CheckoutRequestID", None)
@@ -216,10 +191,15 @@ def paymentSTK(request):
             return JsonResponse(res_data, safe=False)
 
         except json.JSONDecodeError:
+            el = ErrorLogs(
+                errorException="Invalid JSON data",
+                traceback=f"{traceback.format_exc()}",
+            )
+            el.save()
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
         except Exception as e:
-            hu = HotspotUsers(mac_address=f"step 0 FAILED {e}")
-            hu.save()
+            el = ErrorLogs(errorException=f"{e}", traceback=f"{traceback.format_exc()}")
+            el.save()
 
         return JsonResponse({"sucecss": "true"}, status=200)
     return JsonResponse({"error": "Invalid request method"}, status=405)
@@ -229,12 +209,9 @@ def paymentSTK(request):
 def payHeroCallback(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
-        hu = HotspotUsers(mac_address=f"step 3 callnback from Payhero {data} ")
-        hu.save()
 
         response_data = data.get("response", {})
-        hu = HotspotUsers(mac_address=f"step 3 check call {response_data} ")
-        hu.save()
+
         try:
 
             if response_data:
@@ -250,8 +227,6 @@ def payHeroCallback(request):
                 ph = PaymentHistory.objects.filter(
                     CheckoutRequestID=checkout_request_id
                 ).first()
-                hu = HotspotUsers(mac_address=f"step 3 okay ")
-                hu.save()
 
                 if ph:
                     ph.Status = status
@@ -261,23 +236,13 @@ def payHeroCallback(request):
                     ph.ResultDesc = result_desc
                     ph.save()
 
-                    hu = HotspotUsers(
-                        mac_address=f"step 3b {status.lower()} {ph.ipAddress}"
-                    )
-                    hu.save()
-
                     if status.lower() == "success":
-                        hu = HotspotUsers(mac_address=f"step 3c ")
-                        hu.save()
                         allow_hotspot_mac(
                             mac_address=ph.macAddress,
                             ip=ph.ipAddress,
                             plantype=ph.planType,
                         )
                 else:
-                    hu = HotspotUsers(mac_address=f"step 3  fail  ")
-                    hu.save()
-
                     ts = PaymentHistory(
                         amount=amount,
                         CheckoutRequestID=checkout_request_id,
@@ -295,12 +260,9 @@ def payHeroCallback(request):
                 # add the request to
 
                 return JsonResponse({"Result": "Callback Success"})
-
-            hu = HotspotUsers(mac_address=f"step 3 complete fail")
-            hu.save()
-        except:
-            hu = HotspotUsers(mac_address=f"step FFFAILDDDD {traceback.format_exc()}")
-            hu.save()
+        except Exception as e:
+            el = ErrorLogs(errorException=f"{e}", traceback=f"{traceback.format_exc()}")
+            el.save()
 
     return JsonResponse({"Result": "Failed"})
 

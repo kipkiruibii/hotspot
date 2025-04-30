@@ -45,3 +45,16 @@ class HotspotUsers(models.Model):
 
     def __str__(self):
         return f"{self.ip}, Active: {self.active} :Mac Address: {self.mac_address}"
+
+
+class ErrorLogs(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
+    errorException = models.TextField()
+    traceback = models.TextField()
+    dateRecorded = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.errorException}, on: {self.dateRecorded}"
+ 
