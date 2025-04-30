@@ -17,6 +17,8 @@ def homepage(request):
 
 def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
     try:
+        hu = HotspotUsers(mac_address=f"step 4 communicating with mikrotik ")
+        hu.save()
         connection = RouterOsApiPool(
             host="10.0.0.1",  # MikroTik's WireGuard IP
             username="api-user",
@@ -37,7 +39,8 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
                 type="bypassed",  # Or use 'regular' to still require login
                 comment="Auto-added after M-Pesa payment",
             )
-
+        hu = HotspotUsers(mac_address=f"step 5 adding scheduler ")
+        hu.save()
         # Schedule removal after e.g. 1 hour (60 minutes)
         scheduler = api.get_resource("/system/scheduler")
 
@@ -66,7 +69,8 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             comment="Auto-remove user after expiry",
             run_count=1,
         )
-
+        hu = HotspotUsers(mac_address=f"step 6 setting bandwidth")
+        hu.save()
         # set the bandwidth
         queue = api.get_resource("/queue/simple")
 
@@ -76,6 +80,9 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             max_limit="10M/5M",  # 2 Mbps download / 1 Mbps upload
             comment=f"Limit for {mac_address}",
         )
+        hu = HotspotUsers(mac_address=f"step 7 done")
+        hu.save()
+
         # save active to db
         hu = HotspotUsers(
             mac_address=mac_address, active=True, ip=ip, expectedExpiry=exp_t
@@ -196,7 +203,6 @@ def payHeroCallback(request):
                 ph.ResultDesc = result_desc
 
                 if status == "Success":
-
                     allow_hotspot_mac(
                         mac_address=ph.macAddress,
                         ip=ph.ipAddress,

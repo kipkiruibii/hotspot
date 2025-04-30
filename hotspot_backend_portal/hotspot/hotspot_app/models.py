@@ -44,4 +44,4 @@ class HotspotUsers(models.Model):
     expectedExpiry = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.ip}, Active: {self.active}"
+        return f"{self.ip}, Active: {self.active} :Mac Address: {self.mac_address}"
