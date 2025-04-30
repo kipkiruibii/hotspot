@@ -62,12 +62,20 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         elif plantype.lower() == "monthly":
             expiry = "30d 00:00:00"  # 30 days
             exp_t = timezone.now() + timedelta(days=30)
+
+        scripts = api.get_resource("/system/script")
+
+        scripts.add(
+            name=f"remove-{mac_address}",
+            source=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
+            comment=f"Auto-generated removal script for {mac_address}",
+        )
         scheduler.add(
             name=f"remove-{mac_address}",
-            interval=expiry,
-            on_event=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
+            interval=str(expiry),
+            on_event=f"remove-{mac_address}",
             comment="Auto-remove user after expiry",
-            run_count=1,
+            run_count="1",
         )
         hu = HotspotUsers(mac_address=f"step 6 setting bandwidth")
         hu.save()
