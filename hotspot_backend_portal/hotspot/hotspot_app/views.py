@@ -88,7 +88,7 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             name=f"remove-{mac_address}",
             start_time=exp_t.strftime("%H:%M:%S"),
             start_date=exp_t.strftime("%Y-%m-%d"),
-            on_event=f"remove-{mac_address}",
+            on_event=f"/system script run remove-{mac_address}",
             comment="Auto-remove user after expiry",
         )
 
@@ -106,6 +106,21 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
             q_id = q.get(".id") or q.get("id")
             if q_id:
                 queue.remove(id=q_id)
+
+        leases = api.get_resource("/ip/dhcp-server/lease")
+        lease_info = leases.get(mac_address=mac_address)
+
+        # Try fallback to ARP if not found in DHCP
+        if not lease_info:
+            arp = api.get_resource("/ip/arp")
+            lease_info = arp.get(mac_address=mac_address)
+
+        # If still not found, skip or raise error
+        if lease_info:
+            ip = lease_info[0]["address"]
+
+        # Get the IP address
+        ip = lease_info[0]["address"]
 
         queue.add(
             name=f"queue-{mac_address}",
