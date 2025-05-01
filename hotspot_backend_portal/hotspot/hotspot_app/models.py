@@ -34,7 +34,7 @@ class PaymentHistory(models.Model):
         nairobi_tz = pytz.timezone("Africa/Nairobi")
         local_dt = self.dateSubscribed.astimezone(nairobi_tz)
         formatted_date = local_dt.strftime("%d/%b/%Y %H:%M")
-        return f"{self.phoneNumber}_____AMT: {self.amount}_____DATE: {formatted_date}"
+        return f"{self.phoneNumber}_____AMT: {self.amount}_____DATE: {formatted_date} ___{self.Status}"
 
 
 class HotspotUsers(models.Model):
