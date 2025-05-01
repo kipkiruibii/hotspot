@@ -2,6 +2,7 @@ from django.db import models
 import uuid
 from datetime import datetime
 from django.utils import timezone
+import pytz
 
 
 class PaymentHistory(models.Model):
@@ -31,7 +32,10 @@ class PaymentHistory(models.Model):
         ordering = ["-dateSubscribed"]
 
     def __str__(self):
-        return f"{self.phoneNumber} AMT: {self.amount}"
+        nairobi_tz = pytz.timezone("Africa/Nairobi")
+        local_dt = self.dateSubscribed.astimezone(nairobi_tz)
+        formatted_date = local_dt.strftime("%d/%b/%Y %H:%M")
+        return f"{self.phoneNumber} AMT: {self.amount} DATE: {formatted_date}"
 
 
 class HotspotUsers(models.Model):
@@ -50,7 +54,10 @@ class HotspotUsers(models.Model):
         ordering = ["-dateSubscribed"]
 
     def __str__(self):
-        return f"{self.ip}, Active: {self.active} :Mac Address: {self.mac_address}"
+        nairobi_tz = pytz.timezone("Africa/Nairobi")
+        local_dt = self.dateSubscribed.astimezone(nairobi_tz)
+        formatted_date = local_dt.strftime("%d/%b/%Y %H:%M")
+        return f"{self.ip}, Active: {self.active} :Mac Address: {self.mac_address} Date: {formatted_date}"
 
 
 class ErrorLogs(models.Model):
@@ -65,4 +72,7 @@ class ErrorLogs(models.Model):
         ordering = ["-dateRecorded"]
 
     def __str__(self):
-        return f"{self.errorException}, on: {self.dateRecorded}"
+        nairobi_tz = pytz.timezone("Africa/Nairobi")
+        local_dt = self.dateRecorded.astimezone(nairobi_tz)
+        formatted_date = local_dt.strftime("%d/%b/%Y %H:%M")
+        return f"{self.errorException}, on: {formatted_date}"
