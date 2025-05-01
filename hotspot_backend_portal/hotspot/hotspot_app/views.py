@@ -46,9 +46,15 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
         for profile in user_profiles.get():
             for user in hotspot_users.get():
                 if user.get("profile") == profile_name:
-                    hotspot_users.remove(id=user[".id"])
+                    try:
+                        hotspot_users.remove(id=user[".id"])
+                    except:
+                        pass
             if profile["name"] == profile_name:
-                user_profiles.remove(id=profile[".id"])
+                try:
+                    user_profiles.remove(id=profile[".id"])
+                except:
+                    pass
 
         # Create new profile
         user_profiles.add(
