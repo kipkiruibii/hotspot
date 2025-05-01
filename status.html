@@ -103,19 +103,19 @@ $(endif)
         xhr.onload = function () {
           if (xhr.status === 200) {
             const data = JSON.parse(xhr.responseText);
-
             // Assuming the response contains the login link
             if (data && data.login_link) {
                 if(data.success){
+                    console.log('is success')
                     const login_link = data.login_link;
                     const expires_time = data.epires;
                     const plan_type = data.plan_type;
                     const devices_allowed = data.devices_allowed;
 
-                    document.getElementById("devices-allowed").innerText(devices_allowed);
-                    document.getElementById("login-link").innerText(login_link);
-                    document.getElementById("plan-type").innerText(plan_type);
-                    document.getElementById("expires").innerText(devices_allowed);
+                    document.getElementById("devices-allowed").innerText=devices_allowed;
+                    document.getElementById("login-link").innerText=login_link;
+                    document.getElementById("plan-type").innerText=plan_type;
+                    document.getElementById("expires").innerText=devices_allowed;
 
                 }
             } else {

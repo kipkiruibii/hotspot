@@ -312,13 +312,34 @@ def payHeroCallback(request):
 def get_login_link(request):
     if request.method == "POST":
         try:
+            # find user by mac address
+            data = json.loads(request.body.decode("utf-8"))
+
+            # ✅ Extract parameters sent from frontend
+            mac_address = data.get("mac_address", None)
+            if not mac_address:
+                return JsonResponse({"success": False})
+
+            ph = PaymentHistory.objects.filter(macAddress=mac_address).first()
+            if not ph:
+                return JsonResponse({"success": False})
+            expiry_time = ph.expiry
+            if ph.expiry < datetime.now():
+                return JsonResponse({"success": False})
+            nairobi_tz = pytz.timezone("Africa/Nairobi")
+
+            # Convert to Nairobi time
+            expiry_nairobi = expiry_time.astimezone(nairobi_tz)
+
+            # Format: day/month(short name) hour:minute
+            formatted_expiry = expiry_nairobi.strftime("%d/%b %H:%M")
             return JsonResponse(
                 {
                     "success": True,
-                    "login_link": "log",
-                    "expires": "12/06/2024",
-                    "plan_type": "hourly",
-                    "devices_allowed": 2,
+                    "login_link": ph.loginLink,
+                    "expires": formatted_expiry,
+                    "plan_type": ph.planType,
+                    "devices_allowed": ph.devicesCount,
                 }
             )
         except:
