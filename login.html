@@ -6,6 +6,7 @@
     <title>WarpSpeed Hotspot - Choose Your Plan</title>
     <style>
       /* General Styles */
+
       body {
         font-family: Arial, sans-serif;
         background-color: #121212;
@@ -13,10 +14,12 @@
         margin: 0;
         padding: 0;
         display: flex;
+        width: 100%;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
+        overflow-x: hidden;
       }
 
       h1,
@@ -27,10 +30,12 @@
 
       /* Header and Logo */
       .header {
-        padding: 40px;
+        padding: 20px; /* reduce from 40px to allow for more space */
+        box-sizing: border-box;
+        flex-wrap: wrap;
         background-color: #333;
         display: flex;
-        width: 95%;
+        width: 100vw;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 30px;
@@ -324,6 +329,16 @@
         style="display: none; margin-top: 20px; color: rgb(1, 172, 1)"
       ></p>
     </div>
+    <div style="display: flex; justify-content: center; margin-bottom: 20px">
+      <button
+        onclick="copyMessage()"
+        style="display: none"
+        id="copy-btn"
+        class="payment-btn"
+      >
+        Copy Link
+      </button>
+    </div>
 
     <!-- Popup for Missing or Invalid MPesa Number -->
     <div class="popup" id="popup">
@@ -343,6 +358,38 @@
         deviceSelection.style.display = "block";
         updateAmount();
         deviceSelection.scrollIntoView({ behavior: "smooth" });
+      }
+      function copyMessage() {
+        const text = document.getElementById("message").textContent;
+
+        // Modern method
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard
+            .writeText(text)
+            .then(() => {
+              alert("Link copied to clipboard!");
+            })
+            .catch((err) => {
+              fallbackCopyText(text);
+            });
+        } else {
+          fallbackCopyText(text);
+        }
+      }
+
+      // Fallback method using a temporary textarea
+      function fallbackCopyText(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand("copy");
+          alert("Link copied to clipboard!");
+        } catch (err) {
+          alert("Failed to copy text.");
+        }
+        document.body.removeChild(textarea);
       }
 
       // Update the amount when the device count changes
@@ -445,8 +492,10 @@
                 const loginLink = data.login_link;
                 // You can display the login link wherever you want on the page
                 const message = document.getElementById("message");
+                const cpy_link = document.getElementById("copy-btn");
                 message.innerHTML = `Your login link: <a href="${loginLink}" target="_blank">${loginLink}</a>`;
                 message.style.display = "block";
+                cpy_link.style.display = "block";
               }
             } else {
               console.error("No login link found in response.");

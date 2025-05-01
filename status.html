@@ -61,12 +61,12 @@ $(endif)
         $(if login-by != '')
             <h1>You’re connected ✅</h1>
             <p>Thank you for choosing <strong>Warpspeed Hotspot</strong>.<br />Enjoy your browsing experience!</p>
-
-            <p>Devices Allowed: <span id="devices-allowed" style="font-weight: bold;"></span></p>
-            <p>Login Link: <span id="login-link" style="font-weight: bold;"></span></p>
-            <p>Plan Type: <span id="plan-type" style="font-weight: bold;"></span></p>
-            <p>Expires: <span id="expires" style="font-weight: bold;"></span></p>
-            
+            <div id="connection-content" style="display: none;">
+                <p>Devices Allowed: <span id="devices-allowed" style="font-weight: bold;"></span></p>
+                <p>Login Link: <span id="login-link" style="font-weight: bold;"></span></p>
+                <p>Plan Type: <span id="plan-type" style="font-weight: bold;"></span></p>
+                <p>Expires: <span id="expires" style="font-weight: bold;"></span></p>
+            </div>
             <p>Ensure you are connected to Warpspeed Hotspot network before clicking the login link</p>
             <p style="color: red">
                 ⚠️ Important: Using your phone as a hotspot for other devices will
@@ -107,9 +107,10 @@ $(endif)
             // Assuming the response contains the login link
             if (data && data.login_link) {
                 if(data.success){
-                    console.log('is success')
+                    const logininfo=document.getElementById("connection-content");
+                    logininfo.style.display='block';
                     const login_link = data.login_link;
-                    const expires_time = data.epires;
+                    const expires_time = data.expires;
                     const plan_type = data.plan_type;
                     const devices_allowed = data.devices_allowed;
 
