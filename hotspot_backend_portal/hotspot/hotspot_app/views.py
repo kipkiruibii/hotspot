@@ -38,14 +38,15 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
         )
         api = connection.get_api()
 
-        user_profiles = api.get_resource("/ip/hotspot/user/profile")
-        hotspot_users = api.get_resource("/ip/hotspot/user")
         profile_name = f"paid_users-{mac_address}"
         user_profiles = api.get_resource("/ip/hotspot/user/profile")
         hotspot_users = api.get_resource("/ip/hotspot/user")
 
         # Delete existing profile with same name
         for profile in user_profiles.get():
+            for user in hotspot_users.get():
+                if user.get("profile") == profile_name:
+                    hotspot_users.remove(id=user[".id"])
             if profile["name"] == profile_name:
                 user_profiles.remove(id=profile[".id"])
 
@@ -56,16 +57,19 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
             shared_users="2",
         )
         username, password = generate_credentials()
+
         # Add user
         hotspot_users.add(
-            name=username,
-            password=password,
+            name="username",
+            password="password",
             server="hotspot1",
             profile=profile_name,
         )
         login_url = (
-            f"http://warpspeed.logon/login?username={username}&password={password}"
+            f"http://warpspeed.hotspot/login?username={username}&password={password}"
         )
+        ph.username = username
+        ph.password = password
         ph.loginLink = login_url
         ph.save()
 
