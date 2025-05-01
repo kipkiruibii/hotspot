@@ -1,6 +1,5 @@
 from django.db import models
 import uuid
-from datetime import datetime
 from django.utils import timezone
 import pytz
 
@@ -35,7 +34,7 @@ class PaymentHistory(models.Model):
         nairobi_tz = pytz.timezone("Africa/Nairobi")
         local_dt = self.dateSubscribed.astimezone(nairobi_tz)
         formatted_date = local_dt.strftime("%d/%b/%Y %H:%M")
-        return f"{self.phoneNumber} AMT: {self.amount} DATE: {formatted_date}"
+        return f"{self.phoneNumber}_____AMT: {self.amount}_____DATE: {formatted_date}"
 
 
 class HotspotUsers(models.Model):
@@ -57,7 +56,7 @@ class HotspotUsers(models.Model):
         nairobi_tz = pytz.timezone("Africa/Nairobi")
         local_dt = self.dateSubscribed.astimezone(nairobi_tz)
         formatted_date = local_dt.strftime("%d/%b/%Y %H:%M")
-        return f"{self.ip}, Active: {self.active} :Mac Address: {self.mac_address} Date: {formatted_date}"
+        return f"{self.ip}_____Active: {self.active}_____Mac Address: {self.mac_address}_____Date: {formatted_date}"
 
 
 class ErrorLogs(models.Model):
@@ -75,4 +74,4 @@ class ErrorLogs(models.Model):
         nairobi_tz = pytz.timezone("Africa/Nairobi")
         local_dt = self.dateRecorded.astimezone(nairobi_tz)
         formatted_date = local_dt.strftime("%d/%b/%Y %H:%M")
-        return f"{self.errorException}, on: {formatted_date}"
+        return f"{self.errorException},_____on: {formatted_date}"
