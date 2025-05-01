@@ -324,7 +324,7 @@ def get_login_link(request):
             if not ph:
                 return JsonResponse({"success": f"False 2 mac {mac_address}"})
             expiry_time = ph.expiry
-            if ph.expiry < datetime.now():
+            if ph.expiry < timezone.now():
                 return JsonResponse({"success": f"False 3 mac {mac_address}"})
             nairobi_tz = pytz.timezone("Africa/Nairobi")
 
