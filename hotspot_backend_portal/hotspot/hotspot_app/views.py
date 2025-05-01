@@ -104,6 +104,7 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
         scripts.add(
             name=f"script-remove-{mac_address}",
             source=f"""
+                /ip hotspot active remove [find mac-address="{mac_address}"];
                 /ip hotspot user remove [find name="{username}"];
                 /ip hotspot user profile remove [find name="paid_users-{mac_address}"];
             """.strip(),
@@ -347,9 +348,7 @@ def get_login_link(request):
                 }
             )
         except:
-            return JsonResponse(
-                {"success": f"False 5 traceback {traceback.format_exc()}"}
-            )
+            return JsonResponse({"success": f"False 5 traceback "})
     return JsonResponse({"success": False})
 
 

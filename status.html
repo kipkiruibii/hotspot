@@ -67,6 +67,7 @@ $(endif)
             <p>Plan Type: <span id="plan-type" style="font-weight: bold;"></span></p>
             <p>Expires: <span id="expires" style="font-weight: bold;"></span></p>
             
+            <p>Ensure you are connected to Warpspeed Hotspot network before clicking the login link</p>
             <p style="color: red">
                 ⚠️ Important: Using your phone as a hotspot for other devices will
                 reduce your internet speed.
@@ -115,7 +116,7 @@ $(endif)
                     document.getElementById("devices-allowed").innerText=devices_allowed;
                     document.getElementById("login-link").innerText=login_link;
                     document.getElementById("plan-type").innerText=plan_type;
-                    document.getElementById("expires").innerText=devices_allowed;
+                    document.getElementById("expires").innerText=expires_time;
 
                 }
             } else {
