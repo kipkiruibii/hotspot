@@ -71,7 +71,6 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
         ph.username = username
         ph.password = password
         ph.loginLink = login_url
-        ph.save()
 
         # Schedule removal after e.g. 1 hour (60 minutes)
 
@@ -91,8 +90,10 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
 
         toronto_tz = pytz.timezone("America/Toronto")
         exp_t = exp_t.astimezone(toronto_tz)
-
+        ph.expiry = exp_t
+        ph.dateSubscribed = timezone.now()
         scripts = api.get_resource("/system/script")
+        ph.save()
 
         # Remove existing script with the same name, if any
         existing_scripts = scripts.get(name=f"script-remove-{mac_address}")
@@ -253,7 +254,6 @@ def payHeroCallback(request):
         response_data = data.get("response", {})
 
         try:
-
             if response_data:
                 amount = response_data.get("Amount", 0)
                 checkout_request_id = response_data.get("CheckoutRequestID", "k")
@@ -320,7 +320,11 @@ def get_login_link(request):
             if not mac_address:
                 return JsonResponse({"success": f"False 1 mac {mac_address}"})
 
-            ph = PaymentHistory.objects.filter(macAddress=mac_address).first()
+            ph = (
+                PaymentHistory.objects.filter(macAddress=mac_address)
+                .order_by("-dateSubscribed")
+                .first()
+            )
             if not ph:
                 return JsonResponse({"success": f"False 2 mac {mac_address}"})
             expiry_time = ph.expiry

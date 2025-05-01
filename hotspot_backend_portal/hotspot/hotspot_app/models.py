@@ -27,6 +27,9 @@ class PaymentHistory(models.Model):
     ResultDesc = models.TextField(null=True)
     Status = models.TextField(null=False)
 
+    class Meta:
+        ordering = ["-dateSubscribed"]
+
     def __str__(self):
         return f"{self.phoneNumber} AMT: {self.amount}"
 
@@ -43,6 +46,9 @@ class HotspotUsers(models.Model):
     dateSubscribed = models.DateTimeField(default=timezone.now)
     expectedExpiry = models.DateTimeField(default=timezone.now)
 
+    class Meta:
+        ordering = ["-dateSubscribed"]
+
     def __str__(self):
         return f"{self.ip}, Active: {self.active} :Mac Address: {self.mac_address}"
 
@@ -55,6 +61,8 @@ class ErrorLogs(models.Model):
     traceback = models.TextField()
     dateRecorded = models.DateTimeField(default=timezone.now)
 
+    class Meta:
+        ordering = ["-dateRecorded"]
+
     def __str__(self):
         return f"{self.errorException}, on: {self.dateRecorded}"
- 
