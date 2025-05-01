@@ -308,6 +308,7 @@ def payHeroCallback(request):
     return JsonResponse({"Result": "Failed"})
 
 
+@csrf_exempt
 def get_login_link(request):
     if request.method == "POST":
         try:
@@ -322,8 +323,7 @@ def get_login_link(request):
             )
         except:
             return JsonResponse({"success": False})
-
-    pass
+    return JsonResponse({"success": False})
 
 
 def paymentConfirmation(request):
