@@ -10,13 +10,23 @@ import traceback
 from django.utils import timezone
 from datetime import timedelta
 import pytz
+import secrets
+import string
 
 
 def homepage(request):
     return JsonResponse({"status": True})
 
 
-def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
+# Create random username & password
+def generate_credentials(length=8):
+    chars = string.ascii_lowercase + string.digits
+    username = "user_" + "".join(secrets.choice(chars) for _ in range(length))
+    password = "".join(secrets.choice(chars) for _ in range(length))
+    return username, password
+
+
+def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHistory):
     try:
         connection = RouterOsApiPool(
             host="10.0.0.1",  # MikroTik's WireGuard IP
@@ -28,16 +38,47 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
         )
         api = connection.get_api()
 
-        bypass = api.get_resource("/ip/hotspot/ip-binding")
+        user_profiles = api.get_resource("/ip/hotspot/user/profile")
+        hotspot_users = api.get_resource("/ip/hotspot/user")
+        profile_name = f"paid_users-{mac_address}"
+        user_profiles = api.get_resource("/ip/hotspot/user/profile")
+        hotspot_users = api.get_resource("/ip/hotspot/user")
 
-        # Check if already allowed
-        existing = bypass.get(mac_address=mac_address)
-        if not existing:
-            bypass.add(
-                mac_address=mac_address,
-                type="bypassed",  # Or use 'regular' to still require login
-                comment="M-Pesa payment",
-            )
+        # Delete existing profile with same name
+        for profile in user_profiles.get():
+            if profile["name"] == profile_name:
+                user_profiles.remove(id=profile[".id"])
+
+        # Create new profile
+        user_profiles.add(
+            name=profile_name,
+            rate_limit="5M/2M",
+            shared_users="2",
+        )
+        username, password = generate_credentials()
+        # Add user
+        hotspot_users.add(
+            name=username,
+            password=password,
+            server="hotspot1",
+            profile=profile_name,
+        )
+        login_url = (
+            f"http://warpspeed.logon/login?username={username}&password={password}"
+        )
+        ph.loginLink = login_url
+        ph.save()
+
+        # bypass = api.get_resource("/ip/hotspot/ip-binding")
+
+        # # Check if already allowed
+        # existing = bypass.get(mac_address=mac_address)
+        # if not existing:
+        #     bypass.add(
+        #         mac_address=mac_address,
+        #         type="bypassed",  # Or use 'regular' to still require login
+        #         comment="M-Pesa payment",
+        #     )
         # Schedule removal after e.g. 1 hour (60 minutes)
 
         exp_t = timezone.now() + timedelta(minutes=5)
@@ -67,7 +108,11 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str):
                 scripts.remove(id=script_id)
         scripts.add(
             name=f"script-remove-{mac_address}",
-            source=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
+            source=f"""
+                /ip hotspot user remove [find name="{username}"];
+                /ip hotspot user profile remove [find name="paid_users-{mac_address}"];
+            """.strip(),
+            # source=f'/ip/hotspot/ip-binding/remove [find mac-address="{mac_address}"]',
             comment=f"Auto-generated removal script for {mac_address}",
         )
 
@@ -242,6 +287,7 @@ def payHeroCallback(request):
                             mac_address=ph.macAddress,
                             ip=ph.ipAddress,
                             plantype=ph.planType,
+                            ph=ph,
                         )
                 else:
                     ts = PaymentHistory(
