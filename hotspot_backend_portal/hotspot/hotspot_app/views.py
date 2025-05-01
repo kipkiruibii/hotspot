@@ -60,8 +60,8 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
 
         # Add user
         hotspot_users.add(
-            name="username",
-            password="password",
+            name=username,
+            password=password,
             server="hotspot1",
             profile=profile_name,
         )
