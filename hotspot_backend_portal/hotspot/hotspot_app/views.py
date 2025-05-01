@@ -53,8 +53,8 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
         # Create new profile
         user_profiles.add(
             name=profile_name,
-            rate_limit="2M/6M",
-            shared_users="2",
+            rate_limit="2M/5M",
+            shared_users=str(ph.devicesCount),
         )
         username, password = generate_credentials()
 
@@ -73,22 +73,12 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
         ph.loginLink = login_url
         ph.save()
 
-        # bypass = api.get_resource("/ip/hotspot/ip-binding")
-
-        # # Check if already allowed
-        # existing = bypass.get(mac_address=mac_address)
-        # if not existing:
-        #     bypass.add(
-        #         mac_address=mac_address,
-        #         type="bypassed",  # Or use 'regular' to still require login
-        #         comment="M-Pesa payment",
-        #     )
         # Schedule removal after e.g. 1 hour (60 minutes)
 
         exp_t = timezone.now() + timedelta(minutes=5)
 
         if plantype.lower() == "hourly":
-            exp_t = timezone.now() + timedelta(hours=1)
+            exp_t = timezone.now() + timedelta(minutes=5)
 
         elif plantype.lower() == "daily":
             exp_t = timezone.now() + timedelta(days=1)
@@ -316,6 +306,24 @@ def payHeroCallback(request):
             el.save()
 
     return JsonResponse({"Result": "Failed"})
+
+
+def get_login_link(request):
+    if request.method == "POST":
+        try:
+            return JsonResponse(
+                {
+                    "success": True,
+                    "login_link": "log",
+                    "expires": "12/06/2024",
+                    "plan_type": "hourly",
+                    "devices_allowed": 2,
+                }
+            )
+        except:
+            return JsonResponse({"success": False})
+
+    pass
 
 
 def paymentConfirmation(request):

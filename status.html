@@ -1,0 +1,140 @@
+<html>
+<head>
+$(if refresh-timeout)
+<meta http-equiv="refresh" content="$(refresh-timeout-secs)">
+$(endif)
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="-1">
+<title>Warpspeed Hotspot - Status</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        background-color: #121212;
+        color: #f0f0f0;
+        margin: 0;
+        padding: 0;
+    }
+    .main {
+        max-width: 600px;
+        margin: 80px auto;
+        background-color: #1e1e1e;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.6);
+        text-align: center;
+    }
+    h1 {
+        font-size: 26px;
+        margin-bottom: 20px;
+        color: #00e676;
+    }
+    p {
+        font-size: 18px;
+        margin-top: 10px;
+        line-height: 1.6;
+    }
+    .footer {
+        margin-top: 40px;
+        font-size: 14px;
+        color: #aaa;
+    }
+</style>
+
+<!-- <script>
+$(if advert-pending == 'yes')
+    var popup = '';
+    function focusAdvert() {
+        if (window.focus) popup.focus();
+    }
+    function openAdvert() {
+        popup = open('$(link-advert)', 'hotspot_advert', '');
+        setTimeout("focusAdvert()", 1000);
+    }
+$(endif)
+</script> -->
+</head>
+
+<body $(if advert-pending == 'yes') onLoad="openAdvert()" $(endif)>
+    <div class="main">
+        $(if login-by != '')
+            <h1>You’re connected ✅</h1>
+            <p>Thank you for choosing <strong>Warpspeed Hotspot</strong>.<br />Enjoy your browsing experience!</p>
+
+            <p>Devices Allowed: <span id="devices-allowed" style="font-weight: bold;"></span></p>
+            <p>Login Link: <span id="login-link" style="font-weight: bold;"></span></p>
+            <p>Plan Type: <span id="plan-type" style="font-weight: bold;"></span></p>
+            <p>Expires: <span id="expires" style="font-weight: bold;"></span></p>
+            
+            <p style="color: red">
+                ⚠️ Important: Using your phone as a hotspot for other devices will
+                reduce your internet speed.
+              </p>
+        $(else)
+            <h1>Welcome to Warpspeed Hotspot</h1>
+            <p>You are not connected yet. Please log in to enjoy high-speed internet.</p>
+        $(endif)
+
+        <div class="footer">
+            Contact us at <strong>+254 792 608312</strong> for any enquiries or complaints.
+        </div>
+    </div>
+    <script>
+              document.addEventListener("DOMContentLoaded", function () {
+        // Automatically send the MAC address when the page loads
+        const macAddress = document.querySelector('input[name="mac"]').value;
+
+        if (macAddress) {
+          // Send MAC address to the server to fetch the login link
+          fetchLoginLink(macAddress);
+        }
+      });
+
+      // Function to send the MAC address and get the login link
+      function fetchLoginLink(macAddress) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "https://warpspeed.site/get_login_link", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            const data = JSON.parse(xhr.responseText);
+
+            // Assuming the response contains the login link
+            if (data && data.login_link) {
+                if(data.success){
+                    const login_link = data.login_link;
+                    const expires_time = data.epires;
+                    const plan_type = data.plan_type;
+                    const devices_allowed = data.devices_allowed;
+
+                    document.getElementById("devices-allowed").innerText(devices_allowed);
+                    document.getElementById("login-link").innerText(login_link);
+                    document.getElementById("plan-type").innerText(plan_type);
+                    document.getElementById("expires").innerText(devices_allowed);
+
+                }
+            } else {
+              console.error("No login link found in response.");
+            }
+          } else {
+            console.error("Error fetching login link.");
+          }
+        };
+
+        xhr.onerror = function () {
+          console.error("Network error");
+        };
+
+        // Send the MAC address to the server
+        xhr.send(
+          JSON.stringify({
+            mac_address: macAddress,
+          })
+        );
+      }
+
+    </script>
+</body>
+</html>

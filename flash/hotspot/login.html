@@ -286,10 +286,15 @@
         reduce your internet speed.
       </p>
       <!-- <h2>Select Number of Devices</h2> -->
-      <label for="device-count" style="margin-bottom: 10px"
+      <label for="device-count" style="margin-bottom: 10px; display: none"
         >Select Number of Devices:</label
       ><br />
-      <select class="device-select" id="device-count" onchange="updateAmount()">
+      <select
+        class="device-select"
+        id="device-count"
+        onchange="updateAmount()"
+        style="display: none"
+      >
         <option value="1">1 Device</option>
         <option value="2">2 Devices</option>
         <option value="3">3 Devices</option>
@@ -382,13 +387,14 @@
             if (xhr.status === 200) {
               const data = JSON.parse(xhr.responseText);
               alert(
-                "Payment initiated successfully! Enter your mpesa pin in the pop up to complete the payment. Once done refresh the page to get the login link"
+                "Payment initiated successfully! Enter your mpesa pin in the pop up to complete the payment"
               );
               // button.innerHTML = `<span class="spinner"></span> Waiting for Payment...`;
               // button.disabled = false;
               button.style.display = "none";
-              message.innerText = `An STK has been sent to ${mpesaNumber}. Enter pin to confirm the payment. Afterwards refresh this page to get login link`;
+              message.innerText = `An STK has been sent to ${mpesaNumber}. Enter pin to confirm the payment. If you are not redirected after successful payment, refresh this page`;
               message.style.display = "block";
+
               // button.innerHTML = `Proceed to Pay KSh <span id="final-amount">${amount}</span>`;
             } else {
               // alert("Payment failed.");
@@ -417,55 +423,6 @@
       // Close the popup
       function closePopup() {
         document.getElementById("popup").style.display = "none";
-      }
-      document.addEventListener("DOMContentLoaded", function () {
-        // Automatically send the MAC address when the page loads
-        const macAddress = document.querySelector('input[name="mac"]').value;
-
-        if (macAddress) {
-          // Send MAC address to the server to fetch the login link
-          fetchLoginLink(macAddress);
-        }
-      });
-
-      // Function to send the MAC address and get the login link
-      function fetchLoginLink(macAddress) {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "https://warpspeed.site/get_login_link", true);
-        xhr.setRequestHeader("Content-Type", "application/json");
-
-        xhr.onload = function () {
-          if (xhr.status === 200) {
-            const data = JSON.parse(xhr.responseText);
-
-            // Assuming the response contains the login link
-            if (data && data.login_link) {
-              const isSuccessful = data.success;
-              if (isSuccessful) {
-                const loginLink = data.login_link;
-                // You can display the login link wherever you want on the page
-                const message = document.getElementById("message");
-                message.innerHTML = `Your login link: <a href="${loginLink}" target="_blank">${loginLink}</a>`;
-                message.style.display = "block";
-              }
-            } else {
-              console.error("No login link found in response.");
-            }
-          } else {
-            console.error("Error fetching login link.");
-          }
-        };
-
-        xhr.onerror = function () {
-          console.error("Network error");
-        };
-
-        // Send the MAC address to the server
-        xhr.send(
-          JSON.stringify({
-            mac_address: macAddress,
-          })
-        );
       }
     </script>
   </body>

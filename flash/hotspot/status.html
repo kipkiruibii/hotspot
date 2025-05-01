@@ -1,0 +1,74 @@
+<html>
+<head>
+$(if refresh-timeout)
+<meta http-equiv="refresh" content="$(refresh-timeout-secs)">
+$(endif)
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="-1">
+<title>Warpspeed Hotspot - Status</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        background-color: #121212;
+        color: #f0f0f0;
+        margin: 0;
+        padding: 0;
+    }
+    .main {
+        max-width: 600px;
+        margin: 80px auto;
+        background-color: #1e1e1e;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.6);
+        text-align: center;
+    }
+    h1 {
+        font-size: 26px;
+        margin-bottom: 20px;
+        color: #00e676;
+    }
+    p {
+        font-size: 18px;
+        margin-top: 10px;
+        line-height: 1.6;
+    }
+    .footer {
+        margin-top: 40px;
+        font-size: 14px;
+        color: #aaa;
+    }
+</style>
+
+<!-- <script>
+$(if advert-pending == 'yes')
+    var popup = '';
+    function focusAdvert() {
+        if (window.focus) popup.focus();
+    }
+    function openAdvert() {
+        popup = open('$(link-advert)', 'hotspot_advert', '');
+        setTimeout("focusAdvert()", 1000);
+    }
+$(endif)
+</script> -->
+</head>
+
+<body $(if advert-pending == 'yes') onLoad="openAdvert()" $(endif)>
+    <div class="main">
+        $(if login-by != '')
+            <h1>You’re connected ✅</h1>
+            <p>Thank you for choosing <strong>Warpspeed Hotspot</strong>.<br />Enjoy your browsing experience!</p>
+        $(else)
+            <h1>Welcome to Warpspeed Hotspot</h1>
+            <p>You are not connected yet. Please log in to enjoy high-speed internet.</p>
+        $(endif)
+
+        <div class="footer">
+            Contact us at <strong>+254 792 608312</strong> for any enquiries or complaints.
+        </div>
+    </div>
+</body>
+</html>
