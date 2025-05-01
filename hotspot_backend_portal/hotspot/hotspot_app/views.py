@@ -53,7 +53,7 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
         # Create new profile
         user_profiles.add(
             name=profile_name,
-            rate_limit="5M/2M",
+            rate_limit="2M/6M",
             shared_users="2",
         )
         username, password = generate_credentials()
