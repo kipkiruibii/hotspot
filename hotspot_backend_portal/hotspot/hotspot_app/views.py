@@ -318,14 +318,14 @@ def get_login_link(request):
             # ✅ Extract parameters sent from frontend
             mac_address = data.get("mac_address", None)
             if not mac_address:
-                return JsonResponse({"success": False})
+                return JsonResponse({"success": f"False 1 mac {mac_address}"})
 
             ph = PaymentHistory.objects.filter(macAddress=mac_address).first()
             if not ph:
-                return JsonResponse({"success": False})
+                return JsonResponse({"success": f"False 2 mac {mac_address}"})
             expiry_time = ph.expiry
             if ph.expiry < datetime.now():
-                return JsonResponse({"success": False})
+                return JsonResponse({"success": f"False 3 mac {mac_address}"})
             nairobi_tz = pytz.timezone("Africa/Nairobi")
 
             # Convert to Nairobi time
@@ -343,7 +343,9 @@ def get_login_link(request):
                 }
             )
         except:
-            return JsonResponse({"success": False})
+            return JsonResponse(
+                {"success": f"False 5 traceback {traceback.format_exc()}"}
+            )
     return JsonResponse({"success": False})
 
 
