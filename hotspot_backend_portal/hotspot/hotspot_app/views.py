@@ -83,7 +83,7 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
         exp_t = timezone.now() + timedelta(minutes=5)
 
         if plantype.lower() == "hourly":
-            exp_t = timezone.now() + timedelta(minutes=5)
+            exp_t = timezone.now() + timedelta(hours=1)
 
         elif plantype.lower() == "daily":
             exp_t = timezone.now() + timedelta(days=1)
