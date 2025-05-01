@@ -110,7 +110,7 @@ def allow_hotspot_mac(mac_address: str, ip: str, plantype: str, ph: PaymentHisto
         scripts.add(
             name=f"script-remove-{mac_address}",
             source=f"""
-                :foreach i in=[/ip hotspot active find where user="user_1525r8vc"] do={{ /ip hotspot active remove $i }}; 
+                :foreach i in=[/ip hotspot active find where user=f"{username}"] do={{ /ip hotspot active remove $i }}; 
                 /ip hotspot user remove [find name="{username}"];
                 /ip hotspot user profile remove [find name="paid_users-{mac_address}"];
             """.strip(),
